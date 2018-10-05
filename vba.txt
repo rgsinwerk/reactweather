@@ -1,0 +1,152 @@
+Sub sendEmails()
+
+    Dim outlookApp As Outlook.Application
+    Dim outlookMail As Outlook.MailItem
+    
+    Dim subject As String
+    Dim body As String
+    
+    Set outlookApp = New Outlook.Application
+    Set outlookMail = outlookApp.CreateItem(olMailItem)
+    
+    subject = Range("B6").Value
+    body = Range("B9").Value
+    
+    
+    With outlookMail
+        .To = emailsString()
+        .subject = subject
+        .BodyFormat = olFormatHTML
+        .HTMLBody = body
+        .Send
+    End With
+    
+    Set outlookMail = Nothing
+    Set outlookApp = Nothing
+End Sub
+
+
+Function emailsString() As String
+    Dim emailsVariant As Variant
+    Dim lastRow As Integer
+    
+    emailsString = ""
+    
+    lastRow = Sheets("Emails").Range("B1000").End(xlUp).Row
+    emailsVariant = Sheets("Emails").Range("B2:B" & lastRow).Value
+    
+    For i = LBound(emailsVariant) To UBound(emailsVariant)
+        emailsString = emailsString + CStr(emailsVariant(i, 1)) + ";"
+    Next i
+
+End Function
+Sub sendSchedule(column As Integer)
+    
+    Dim outlookApp As Outlook.Application
+    Dim scheduleItem As Object
+    Dim scheduleDict As Dictionary
+    
+    Set scheduleDict = scheduleData(column)
+    
+    Set outlookApp = New Outlook.Application
+    Set myItem = outlookApp.CreateItem(olAppointmentItem)
+    
+    If scheduleDict("start") = "" And scheduleDict("title") = "" Then
+        Exit Sub
+    End If
+    
+    
+    With myItem
+        .MeetingStatus = olMeeting
+        .subject = scheduleDict("title")
+        .Location = scheduleDict("location")
+        .Start = scheduleDict("start")
+        .Duration = scheduleDict("duration")
+    End With
+    
+    If scheduleDict.Exists("people") Then
+        For Each person In scheduleDict("people")
+                Set myRequiredAttendee = myItem.Recipients.Add(person)
+                myRequiredAttendee.Type = olOptional
+        Next person
+    End If
+    'myItem.Display
+    myItem.Send
+
+
+End Sub
+
+Sub createNewSchedule()
+
+    Dim lastColumn As Integer
+    
+    lastColumn = Sheets("Termine").Cells(10, Columns.Count).End(xlToLeft).column + 1
+    
+    Cells(10, lastColumn).Value = lastColumn - 1
+    Cells(11, lastColumn).Value = Range("B2").Value
+    Cells(12, lastColumn).Value = Range("B3").Value
+    Cells(13, lastColumn).Value = Range("B4").Value
+    Cells(14, lastColumn).Value = Range("B5").Value
+    Cells(15, lastColumn).Value = lastColumn - 1
+
+End Sub
+
+Sub deleteSchedule()
+
+    Dim lastColumn As Integer
+    
+    lastColumn = Sheets("Termine").Cells(10, Columns.Count).End(xlToLeft).column
+    For i = 10 To 99
+        Cells(i, lastColumn) = ""
+    Next i
+    
+
+End Sub
+
+Function scheduleData(column As Integer) As Dictionary
+    
+    Dim d As Dictionary
+    Dim dataString As String
+    Dim lastRow As Integer
+    Dim people() As String
+    Dim counter As Integer
+    
+    
+    
+    Set d = New Dictionary
+    counter = 0
+    
+    d("title") = Sheets("Termine").Cells(11, column).Value
+    d("location") = Sheets("Termine").Cells(12, column).Value
+    d("start") = Sheets("Termine").Cells(13, column).Value
+    d("duration") = Sheets("Termine").Cells(14, column).Value
+
+    dataString = ""
+    ReDim people(0)
+    
+    For i = 16 To 99
+        If Sheets("Termine").Cells(i, column).Value = "X" Or Sheets("Termine").Cells(i, column).Value = "x" Then
+            people(counter) = Sheets("Termine").Cells(i, 1).Value
+            counter = counter + 1
+            ReDim Preserve people(counter)
+        End If
+    Next i
+    
+    If counter > 0 Then
+        ReDim Preserve people(counter - 1)
+        d("people") = people
+    End If
+    
+
+    Set scheduleData = d
+End Function
+
+Sub sendAllSchedules()
+    Dim lastColumn As Integer
+    
+    lastColumn = Sheets("Termine").Cells(10, Columns.Count).End(xlToLeft).column
+    For i = 2 To lastColumn
+        sendSchedule CInt(i)
+    Next i
+
+End Sub

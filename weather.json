@@ -1,0 +1,30 @@
+{
+    "weather":{
+        "coord":{"lon":123,"lat":35},
+        "added":{
+            "city_name":"Hannover"
+        },
+        "weather":[
+            {
+                "id":803,
+                "main":"Clouds",
+                "description":"broken clouds",
+                "icon":"https://cdn.glitch.com/6e8889e5-7a72-48f0-a061-863548450de5%2F04d.png?1499366020964"
+                }],
+        "base":"stations",
+        "main":{
+            "temp":22.21,
+            "pressure":1032.38,
+            "humidity":100,
+            "temp_min":22.21,
+            "temp_max":22.21,
+            "sea_level":1032.38,
+            "grnd_level":1032.38
+        },
+        "wind":{"speed":8.18,"deg":27.0007},
+        "clouds":{"all":56},"dt":1537867072,
+        "sys":{"message":0.0035,"sunrise":1537825087,"sunset":1537868442},
+        "id":0,
+        "name":"",
+        "cod":200}
+}
